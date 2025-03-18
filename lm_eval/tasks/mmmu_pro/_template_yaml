@@ -1,5 +1,5 @@
 dataset_path: MMMU/MMMU_Pro
-validation_split: test
+test_split: test
 output_type: generate_until
 doc_to_image: !function utils.doc_to_image
 doc_to_text: !function utils.doc_to_text
