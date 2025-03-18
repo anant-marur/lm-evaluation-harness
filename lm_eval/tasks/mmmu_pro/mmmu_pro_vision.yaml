@@ -1,0 +1,4 @@
+task: mmmu_pro_vision
+include: _template_yaml
+task_alias: Vision
+dataset_name: vision
