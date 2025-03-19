@@ -13,7 +13,7 @@ MULTI_CHOICE_EXAMPLE_FORMAT = """{}
 
 {}
 
-Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+Answer with the option letter from the given choices directly."""
 
 
 SHORT_ANS_EXAMPLE_FORMAT = """{}
