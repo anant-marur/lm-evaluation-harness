@@ -11,12 +11,12 @@ random.seed(42)
 # Link: https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/tasks/mmmu/utils.py
 
 
-# source for prompt fstrings: https://github.com/MMMU-Benchmark/MMMU/blob/7787d60648c82a9d40acd656fa541a6c74f58995/eval/configs/llava1.5.yaml#L3
+# From https://github.com/MMMU-Benchmark/MMMU/blob/main/mmmu-pro/prompts.yaml
 MULTI_CHOICE_EXAMPLE_FORMAT = """{}
 
 {}
 
-Answer with the option's letter from the given choices directly."""
+Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
 
 
 START_CHR = "A"
@@ -65,7 +65,6 @@ def _doc_to_text(doc):
 
     prompt = MULTI_CHOICE_EXAMPLE_FORMAT.format(doc["question"], choices_str)
 
-
     return prompt
 
 
@@ -79,6 +78,31 @@ def process_results(doc, results):
     is_correct = eval_multi_choice(doc["answer"], pred)
 
     return {"acc": float(is_correct)}
+
+# ============ MMMU-Pro Vision Variant lm_eval utility functions, written by hand (extrapolated from the above) ============ 
+
+def vision_doc_to_image(doc):
+    # mmmu-pro-vision always has a single image under 'image'.
+    return [doc['image']]
+
+
+def vision_doc_to_text(doc):
+    choices_str = ""
+
+    for i, choice in enumerate(ast.literal_eval(doc["options"])):
+        # add (A) {choice1}\n , (B) {choice2}\n , and so on
+        # to create the list of formatted choices in the prompt
+        choices_str += f"\n({chr(ord(START_CHR) + i)}) {choice}"
+
+    choices_str = (
+        choices_str.lstrip()
+    )  # remove the extraneous prepended \n that we added
+
+    # mmmu-pro-vision has no question, just a single image and a list of choices.
+    prompt = MULTI_CHOICE_EXAMPLE_FORMAT.format("<image>", choices_str)
+
+    return prompt
+
 
 
 # ============ MMMU-Pro utility functions, for use in the above. Copied directly from MMMU repo ============ 

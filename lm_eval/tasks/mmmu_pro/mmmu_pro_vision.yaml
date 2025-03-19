@@ -2,3 +2,5 @@ task: mmmu_pro_vision
 include: _template_yaml
 task_alias: Vision
 dataset_name: vision
+doc_to_image: !function utils.vision_doc_to_image
+doc_to_text: !function utils.vision_doc_to_text
