@@ -15,11 +15,5 @@ metric_list:
   - metric: acc
     aggregation: mean
     higher_is_better: true
-  - metric: total
-    aggregation: sum
-    higher_is_better: true
-  - metric: missing
-    aggregation: sum
-    higher_is_better: false
 metadata:
   version: 0.0
