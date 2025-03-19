@@ -73,11 +73,20 @@ def process_results(doc, results):
     option_strs = ast.literal_eval(doc["options"])
     index2ans, all_choices = get_multi_choice_info(option_strs)
 
-    pred = parse_multi_choice_response(results[0], all_choices, index2ans)
-    # print(pred, all_choices, index2ans)
-    is_correct = eval_multi_choice(doc["answer"], pred)
+    if len(results) > 0 and len(results[0]) > 0:
+        missing = 0
+        pred = parse_multi_choice_response(results[0], all_choices, index2ans)
+        # print(pred, all_choices, index2ans)
+        is_correct = eval_multi_choice(doc["answer"], pred)
+    else:
+        missing = 1
+        is_correct = False
 
-    return {"acc": float(is_correct)}
+    return {
+        "acc": float(is_correct),
+        "total": 1,
+        "missing": missing,
+    }
 
 # ============ MMMU-Pro Vision Variant lm_eval utility functions, written by hand (extrapolated from the above) ============ 
 
