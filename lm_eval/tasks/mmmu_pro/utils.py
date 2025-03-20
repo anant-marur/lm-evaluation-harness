@@ -18,6 +18,10 @@ MULTI_CHOICE_EXAMPLE_FORMAT = """{}
 
 Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
 
+MULTI_CHOICE_EXAMPLE_FORMAT_VISION = """<image>
+
+Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+
 
 START_CHR = "A"
 
@@ -89,22 +93,8 @@ def vision_doc_to_image(doc):
 
 
 def vision_doc_to_text(doc):
-    choices_str = ""
-
-    for i, choice in enumerate(ast.literal_eval(doc["options"])):
-        # add (A) {choice1}\n , (B) {choice2}\n , and so on
-        # to create the list of formatted choices in the prompt
-        choices_str += f"\n({chr(ord(START_CHR) + i)}) {choice}"
-
-    choices_str = (
-        choices_str.lstrip()
-    )  # remove the extraneous prepended \n that we added
-
-    # mmmu-pro-vision has no question, just a single image and a list of choices.
-    prompt = MULTI_CHOICE_EXAMPLE_FORMAT.format("<image>", choices_str)
-
-    return prompt
-
+    # mmmu-pro-vision has no question, just a single image. This image contains the question and a list of choices.
+    return MULTI_CHOICE_EXAMPLE_FORMAT_VISION
 
 
 # ============ MMMU-Pro utility functions, for use in the above. Copied directly from MMMU repo ============ 
