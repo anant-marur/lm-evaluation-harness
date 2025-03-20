@@ -20,7 +20,7 @@ Answer with the option letter from the given choices directly. The last line of 
 
 MULTI_CHOICE_EXAMPLE_FORMAT_VISION = """<image>
 
-Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+Answer the following multiple-choice question in the image. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
 
 
 START_CHR = "A"
