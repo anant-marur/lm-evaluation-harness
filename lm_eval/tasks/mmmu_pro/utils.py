@@ -16,11 +16,11 @@ MULTI_CHOICE_EXAMPLE_FORMAT = """{}
 
 {}
 
-Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+Answer the preceding multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options. Think step by step before answering."""
 
 MULTI_CHOICE_EXAMPLE_FORMAT_VISION = """<image>
 
-Answer the following multiple-choice question in the image. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+Write out the multiple-choice question in the image and then solve it. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options. Think step by step before answering."""
 
 
 START_CHR = "A"
