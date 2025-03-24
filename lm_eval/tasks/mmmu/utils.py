@@ -13,12 +13,12 @@ MULTI_CHOICE_EXAMPLE_FORMAT = """{}
 
 {}
 
-Answer the preceding multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options. Think step by step before answering."""
+Answer the preceding multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
 
 
 SHORT_ANS_EXAMPLE_FORMAT = """{}
 
-Answer the question using a single word or phrase. Think step by step before answering."""
+Answer the question using a single word or phrase."""
 
 START_CHR = "A"
 

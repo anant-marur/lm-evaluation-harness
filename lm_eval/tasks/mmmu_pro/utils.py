@@ -12,23 +12,41 @@ random.seed(42)
 
 
 # From https://github.com/MMMU-Benchmark/MMMU/blob/main/mmmu-pro/prompts.yaml
-MULTI_CHOICE_EXAMPLE_FORMAT = """{}
+
+# Direct prompting 
+MULTI_CHOICE_EXAMPLE_FORMAT_DIRECT = """{}
+
+{}
+
+Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+
+
+MULTI_CHOICE_EXAMPLE_FORMAT_VISION_DIRECT = """<image>
+
+Answer with the option letter from the given choices directly. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options."""
+
+# COT prompting
+MULTI_CHOICE_EXAMPLE_FORMAT_COT = """{}
 
 {}
 
 Answer the preceding multiple choice question. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options. Think step by step before answering."""
 
-MULTI_CHOICE_EXAMPLE_FORMAT_VISION = """<image>
+
+MULTI_CHOICE_EXAMPLE_FORMAT_VISION_COT = """<image>
 
 Write out the multiple-choice question in the image and then solve it. The last line of your response should be of the following format: 'Answer: $LETTER' (without quotes) where $LETTER is one of the options. Think step by step before answering."""
 
 
 START_CHR = "A"
 
+# input utility functions
 
+# standard variants image input
 def doc_to_image(doc):
     # get formatted prompt (incl. multi-choice options) pre-<image {i}> reformatting
-    input_text = _doc_to_text(doc)
+    # we use _doc_to_text_direct here, but direct vs. COT doesn't matter for the images so this can be used for either variant
+    input_text = _doc_to_text_direct(doc)
     # locate <image {i}> instances in input
     image_placeholders = [
         img.replace(" ", "_").replace("<", "").replace(">", "")
@@ -42,10 +60,11 @@ def doc_to_image(doc):
     return visuals
 
 
-def doc_to_text(doc):
+# standard variants, direct prompting
+def doc_to_text_direct(doc):
     """Get the prompt for a given document."""
 
-    prompt = _doc_to_text(doc)
+    prompt = _doc_to_text_direct(doc)
 
     for i in range(1, 8):
         # replace <image {i}> with <image>. TODO: check this is always the right decision incl. for non-HF models
@@ -54,7 +73,7 @@ def doc_to_text(doc):
     return prompt
 
 
-def _doc_to_text(doc):
+def _doc_to_text_direct(doc):
     """Helper--get the prompt for a given document but DO NOT yet replace <image {i}> with <image>."""
     choices_str = ""
 
@@ -67,11 +86,59 @@ def _doc_to_text(doc):
         choices_str.lstrip()
     )  # remove the extraneous prepended \n that we added
 
-    prompt = MULTI_CHOICE_EXAMPLE_FORMAT.format(doc["question"], choices_str)
+    prompt = MULTI_CHOICE_EXAMPLE_FORMAT_DIRECT.format(doc["question"], choices_str)
+
+    return prompt
+    
+
+# standard variants, COT prompting
+def doc_to_text_cot(doc):
+    """Get the prompt for a given document."""
+
+    prompt = _doc_to_text_cot(doc)
+
+    for i in range(1, 8):
+        # replace <image {i}> with <image>. TODO: check this is always the right decision incl. for non-HF models
+        prompt = prompt.replace(f"<image {i}>", "<image>")
 
     return prompt
 
 
+def _doc_to_text_cot(doc):
+    """Helper--get the prompt for a given document but DO NOT yet replace <image {i}> with <image>."""
+    choices_str = ""
+
+    for i, choice in enumerate(ast.literal_eval(doc["options"])):
+        # add (A) {choice1}\n , (B) {choice2}\n , and so on
+        # to create the list of formatted choices in the prompt
+        choices_str += f"\n({chr(ord(START_CHR) + i)}) {choice}"
+
+    choices_str = (
+        choices_str.lstrip()
+    )  # remove the extraneous prepended \n that we added
+
+    prompt = MULTI_CHOICE_EXAMPLE_FORMAT_COT.format(doc["question"], choices_str)
+
+    return prompt
+
+
+# vision variants
+def vision_doc_to_image(doc):
+    # mmmu-pro-vision always has a single image under 'image'. This is independent of CoT vs. Direct prompting.
+    return [doc['image']]
+
+
+def vision_doc_to_text_direct(doc):
+    # mmmu-pro-vision has no question, just a single image. This image contains the question and a list of choices.
+    return MULTI_CHOICE_EXAMPLE_FORMAT_VISION_DIRECT
+
+
+def vision_doc_to_text_cot(doc):
+    # mmmu-pro-vision has no question, just a single image. This image contains the question and a list of choices.
+    return MULTI_CHOICE_EXAMPLE_FORMAT_VISION_COT
+
+
+# output processing utility functions
 def process_results(doc, results):
     # multichoice logic
     option_strs = ast.literal_eval(doc["options"])
@@ -84,18 +151,6 @@ def process_results(doc, results):
     return {
         "acc": float(is_correct),
     }
-
-# ============ MMMU-Pro Vision Variant lm_eval utility functions, written by hand (extrapolated from the above) ============ 
-
-def vision_doc_to_image(doc):
-    # mmmu-pro-vision always has a single image under 'image'.
-    return [doc['image']]
-
-
-def vision_doc_to_text(doc):
-    # mmmu-pro-vision has no question, just a single image. This image contains the question and a list of choices.
-    return MULTI_CHOICE_EXAMPLE_FORMAT_VISION
-
 
 # ============ MMMU-Pro utility functions, for use in the above. Copied directly from MMMU repo ============ 
 # Link: https://github.com/MMMU-Benchmark/MMMU/blob/main/mmmu-pro/evaluate.py
