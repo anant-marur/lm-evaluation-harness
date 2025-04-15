@@ -939,7 +939,7 @@ class ConfigurableTask(Task):
                         f'Both target_delimiter "{self.config.target_delimiter}" and target choice: "{choice}" do not have whitespace, ignore if the language you are evaluating on does not require/use whitespace'
                     )
 
-    @retry(stop=stop_after_attempt(4), wait=wait_exponential(multiplier=2, min=60, max=600), before_sleep=before_sleep_log(eval_logger, logging.ERROR))
+    @retry(stop=stop_after_attempt(10), wait=wait_exponential(multiplier=1, min=60, max=600), before_sleep=before_sleep_log(eval_logger, logging.ERROR))
     def download(self, dataset_kwargs: Optional[Dict[str, Any]] = None) -> None:
         # We add retries here to account for occasional flaky behavior with downloading datasets from huggingface
         self.dataset = datasets.load_dataset(
