@@ -56,13 +56,16 @@ Model response: The correct answer is (B) 8/11.
 Extracted answer: B
 """
 
+IMAGE_PROMPT_TEMPLATE = """<image>
+
+{}"""
 
 # ================================================
 # Document-to-text and document-to-image functions
 # ================================================
 
 def doc_to_image(doc):
-    return doc["decoded_image"]
+    return [doc["decoded_image"]]
 
 
 def doc_to_text(doc):
@@ -71,15 +74,25 @@ def doc_to_text(doc):
     # - 'solution' shot prompting, asking the model to provide a solution (rather than 'code' shot prompting (aka PoT), which asks the model to provide a Python code)
     # - no captions
     # - no OCR
-    return mathvista_create_one_query(
-        problem=doc,
+    problem = {
+        "question": doc["question"],
+        "choices": doc["choices"],
+        "unit": doc["unit"],
+        "ocr": "", # no OCR
+        "caption": "", # no captions
+        "precision": doc["precision"],
+        "question_type": doc["question_type"],
+        "answer_type": doc["answer_type"],
+    }
+    query = mathvista_create_one_query(
+        problem=problem,
         examples=[], # 0 shot
         shot_num=0, # 0 shot
         shot_type="solution", # 'solution' shot prompting
         use_caption=False, # no captions
         use_ocr=False # no OCR
     )
-
+    return IMAGE_PROMPT_TEMPLATE.format(query)
 
 # Copied directly mathvista's `create_one_query` function (https://github.com/lupantech/MathVista/blob/ece407d305f0bca51b689567c956cf70c8cdd847/evaluation/build_query.py#L152)
 def mathvista_create_one_query(problem, examples, shot_num, shot_type, use_caption, use_ocr):
