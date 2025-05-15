@@ -5,9 +5,10 @@ process_results: !function utils.process_results
 generation_kwargs:
   until:
     - "<|endoftext|>"
+  # default hyperparams sourced from lmms eval: https://github.com/EvolvingLMMs-Lab/lmms-eval/blob/main/lmms_eval/tasks/mathvista/mathvista_test.yaml
   temperature: 0.0
   do_sample: false
-  max_gen_toks: 512
+  max_gen_toks: 1024
 metric_list:
   - metric: acc
     aggregation: mean
