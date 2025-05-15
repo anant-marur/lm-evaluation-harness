@@ -70,10 +70,14 @@ def doc_to_image(doc):
 
 def doc_to_text(doc):
     # We assume/set default behavior:
-    # - 0 shot, so we skip demo examples
+    # - 0 shot, so we skip demo examples. Reasoning:
+    #      1. Industry standards: The majority of published results for LMMs (large multimodal models) (Qwen2.5-VL, QvQ, Llama 3.2, Llama 4, etc.) report 0-shot results.
+    #      2. MathVista's paper (https://arxiv.org/pdf/2310.02255) also reports 0-shot results for LMMs, only using 2-shot results for CoT text-only models.
     # - 'solution' shot prompting, asking the model to provide a solution (rather than 'code' shot prompting (aka PoT), which asks the model to provide a Python code)
     # - no captions
+    #      - Reasoning: MathVista's paper (https://arxiv.org/pdf/2310.02255) does not use captions for LMM results.
     # - no OCR
+    #      - Reasoning: MathVista's paper (https://arxiv.org/pdf/2310.02255) does not use OCR for LMM results.
     problem = {
         "question": doc["question"],
         "choices": doc["choices"],
