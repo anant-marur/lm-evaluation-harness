@@ -1,7 +1,7 @@
 dataset_path: AI4Math/MathVista
 output_type: generate_until
 doc_to_target: "answer"
-process_results: !function utils.process_results # TODO: edit
+process_results: !function utils.process_results
 generation_kwargs:
   until:
     - "<|endoftext|>"
