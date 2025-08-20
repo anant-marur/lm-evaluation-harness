@@ -44,6 +44,9 @@ eval_logger = logging.getLogger(__name__)
 
 LogLikelihoodInputs = Tuple[Tuple[str, str], List[int], List[int]]
 
+# Default model name to use when no model is specified
+PRECOG_MODEL = "PRECOG_MODEL"
+
 
 def _construct_openai_url(base_url: Optional[str], endpoint: str) -> Optional[str]:
     """
@@ -147,7 +150,7 @@ class TemplateAPI(TemplateLM):
                 f"Attempted to use an API model, but the required packages {missing_packages} are not installed. "
                 'Please install these via `pip install lm-eval[api]` or `pip install -e ."[api]"`'
             )
-        self.model = model or pretrained
+        self.model = model or pretrained or PRECOG_MODEL
         self.base_url = base_url or os.environ.get('OPENAI_BASE_URL')
         self.tokenizer = tokenizer
         if not isinstance(batch_size, int) and "auto" in batch_size:
