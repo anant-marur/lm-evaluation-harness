@@ -5,7 +5,7 @@ from operator import itemgetter
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from lm_eval.api.registry import register_model
-from lm_eval.models.api_models import TemplateAPI
+from lm_eval.models.api_models import TemplateAPI, _construct_openai_url
 from lm_eval.models.utils import handle_stop_sequences
 
 
@@ -197,7 +197,10 @@ class OpenAICompletionsAPI(LocalCompletionsAPI):
         **kwargs,
     ):
         super().__init__(
-            base_url=base_url or os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1/completions'), 
+            base_url=base_url or _construct_openai_url(
+                os.environ.get('OPENAI_BASE_URL'), 
+                'v1/completions'
+            ) or 'https://api.openai.com/v1/completions',
             tokenizer_backend=tokenizer_backend, 
             **kwargs
         )
@@ -239,7 +242,10 @@ class OpenAIChatCompletion(LocalChatCompletion):
                 "o1 models do not support `stop` and only support temperature=1"
             )
         super().__init__(
-            base_url=base_url or os.environ.get('OPENAI_BASE_URL', 'https://api.openai.com/v1/chat/completions'),
+            base_url=base_url or _construct_openai_url(
+                os.environ.get('OPENAI_BASE_URL'), 
+                'v1/chat/completions'
+            ) or 'https://api.openai.com/v1/chat/completions',
             tokenizer_backend=tokenizer_backend,
             tokenized_requests=tokenized_requests,
             **kwargs,
