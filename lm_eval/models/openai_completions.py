@@ -21,7 +21,12 @@ class LocalCompletionsAPI(TemplateAPI):
         **kwargs,
     ):
         super().__init__(
-            base_url=base_url, tokenizer_backend=tokenizer_backend, **kwargs
+            base_url=base_url or _construct_openai_url(
+                os.environ.get('OPENAI_BASE_URL'), 
+                'v1/completions'
+            ),
+            tokenizer_backend=tokenizer_backend, 
+            **kwargs
         )
 
     def _create_payload(
@@ -117,7 +122,10 @@ class LocalChatCompletion(LocalCompletionsAPI):
             "chat-completions endpoint requires the `--apply_chat_template` flag."
         )
         super().__init__(
-            base_url=base_url,
+            base_url=base_url or _construct_openai_url(
+                os.environ.get('OPENAI_BASE_URL'), 
+                'v1/chat/completions'
+            ),
             tokenizer_backend=tokenizer_backend,
             tokenized_requests=tokenized_requests,
             **kwargs,
