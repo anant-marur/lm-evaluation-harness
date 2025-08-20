@@ -4,7 +4,9 @@ import copy
 import itertools
 import json
 import logging
+import os
 from functools import cached_property
+from urllib.parse import urljoin, urlparse
 from typing import (
     Any,
     Awaitable,
@@ -41,6 +43,58 @@ from lm_eval.models.utils import Collator, chunks, configure_pad_token
 eval_logger = logging.getLogger(__name__)
 
 LogLikelihoodInputs = Tuple[Tuple[str, str], List[int], List[int]]
+
+# Default model name to use when no model is specified
+PRECOG_MODEL = "PRECOG_MODEL"
+
+
+def _construct_openai_url(base_url: Optional[str], endpoint: str) -> Optional[str]:
+    """
+    Construct a proper OpenAI API URL by extracting the base from the URL and appending the endpoint.
+    This approach cleanly handles any existing paths in the base_url.
+    
+    Args:
+        base_url: The base URL (could include various paths)
+        endpoint: The specific endpoint (e.g., 'v1/completions', 'v1/chat/completions')
+    
+    Returns:
+        The properly constructed URL, or None if base_url is None
+    
+    Examples:
+        _construct_openai_url('http://localhost:8080', 'v1/completions') 
+        -> 'http://localhost:8080/v1/completions'
+        
+        _construct_openai_url('http://localhost:8080/v1/completions', 'v1/completions')
+        -> 'http://localhost:8080/v1/completions'
+        
+        _construct_openai_url('https://api.custom.com/proxy/v1/chat/completions', 'v1/completions')
+        -> 'https://api.custom.com/proxy/v1/completions'
+    """
+    if base_url is None:
+        return None
+    
+    parsed = urlparse(base_url)
+    
+    # Extract the base: scheme + netloc + any base path
+    # Remove common OpenAI API endpoints from the path to get the true base
+    path = parsed.path.rstrip('/')
+    
+    # Remove common OpenAI endpoints if they exist
+    openai_endpoints = ['/v1/completions', '/v1/chat/completions']
+    for openai_endpoint in openai_endpoints:
+        if path.endswith(openai_endpoint):
+            path = path[:-len(openai_endpoint)]
+            break
+    
+    # Construct the base URL (scheme + netloc + cleaned path)
+    base = f"{parsed.scheme}://{parsed.netloc}{path}"
+    
+    # Ensure base ends with slash and append endpoint
+    if not base.endswith('/'):
+        base += '/'
+    
+    return urljoin(base, endpoint)
+
 
 
 # utility class to keep track of json encoded chats
@@ -96,8 +150,8 @@ class TemplateAPI(TemplateLM):
                 f"Attempted to use an API model, but the required packages {missing_packages} are not installed. "
                 'Please install these via `pip install lm-eval[api]` or `pip install -e ."[api]"`'
             )
-        self.model = model or pretrained
-        self.base_url = base_url
+        self.model = model or pretrained or PRECOG_MODEL
+        self.base_url = base_url or os.environ.get('OPENAI_BASE_URL')
         self.tokenizer = tokenizer
         if not isinstance(batch_size, int) and "auto" in batch_size:
             eval_logger.warning(
